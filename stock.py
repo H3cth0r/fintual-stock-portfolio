@@ -1,6 +1,7 @@
 import yfinance as yf
 import pandas as pd
 from datetime import datetime
+from pandas.errors import OutOfBoundsDatetime
 
 import io
 from contextlib import redirect_stdout
@@ -30,8 +31,28 @@ class Stock(pd.DataFrame):
         donwloaded, _ = run_function_silently(lambda: yf.download(**param_dict))
         return donwloaded
 
+    def price(self, date):
+        """Returns the adjusted close price for a given date or the nearest available date."""
+        # Ensure the date is in datetime format
+        if not isinstance(date, pd.Timestamp):
+            date = pd.to_datetime(date)
+
+        # Try to get the price for the exact date
+        if date in self.index:
+            return self.loc[date, "Adj Close"]
+
+        # If date is not found, get the closest available date
+        nearest_idx = self.index.get_indexer([date], method='nearest')[0]
+        if nearest_idx >= 0:  # Ensure that the index is valid
+            nearest_date = self.index[nearest_idx]
+            return self.loc[nearest_date, "Adj Close"]
+        
+        # If no valid date is available in the index
+        print("not found!")
+        return None
+
 if __name__ == "__main__":
-    start_date  = datetime(2020, 1, 1)
-    end_date    = datetime(2023, 1, 1)
+    start_date  = datetime(2021, 1, 1)
+    end_date    = datetime(2024, 1, 1)
     stock_df    = Stock(ticker="NVDA", start=start_date, end=end_date)
     print(stock_df)
