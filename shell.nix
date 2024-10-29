@@ -8,6 +8,7 @@ pkgs.mkShell {
     pkgs.python311Packages.matplotlib
     pkgs.python311Packages.yfinance
     pkgs.python311Packages.jupyter
+    pkgs.python311Packages.flask
   ];
 
   shellHook = ''
